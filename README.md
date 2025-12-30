@@ -2,6 +2,12 @@
 
 Transform any image into an interactive 3D scene using Apple's SHARP model for Gaussian splatting.
 
+
+
+https://github.com/user-attachments/assets/fbf0522d-cdc2-499d-8331-48c7aa17aea4
+
+
+
 ## Features
 
 - **Drag-and-drop image upload** - PNG, JPG, WEBP support (up to 10MB)
