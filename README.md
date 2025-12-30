@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Image to 3D
 
-## Getting Started
+Transform any image into an interactive 3D scene using Apple's SHARP model for Gaussian splatting.
 
-First, run the development server:
+## Features
+
+- **Drag-and-drop image upload** - PNG, JPG, WEBP support (up to 10MB)
+- **Real-time 3D viewer** - Interactive Gaussian splat rendering with Three.js
+- **Fast processing** - SHARP model runs in under 1 second on GPU (after warm-up)
+- **Downloadable output** - Export generated PLY files
+
+## Setup
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Set Up Modal
+
+1. Create a [Modal.com](https://modal.com) account
+2. Install the Modal CLI:
+   ```bash
+   pip install modal
+   ```
+3. Authenticate with Modal:
+   ```bash
+   modal token new
+   ```
+4. Deploy the SHARP endpoint:
+   ```bash
+   modal deploy modal/sharp_api.py
+   ```
+5. Copy the endpoint URL from the Modal dashboard (looks like `https://your-username--image-to-3d-sharp-sharpmodel-generate.modal.run`)
+
+### 3. Configure Environment
+
+Create a `.env.local` file in the project root:
+
+```bash
+MODAL_ENDPOINT_URL=https://your-username--image-to-3d-sharp-sharpmodel-generate.modal.run
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to use the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Modal Endpoint
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The Modal endpoint (`modal/sharp_api.py`) deploys Apple's SHARP model as a serverless GPU function:
 
-## Learn More
+- **GPU**: A10G (can be changed to A100 for faster processing)
+- **Cold start**: ~30-60 seconds (first request after idle)
+- **Warm inference**: <1 second
+- **Idle timeout**: 5 minutes (configurable)
 
-To learn more about Next.js, take a look at the following resources:
+### Local Testing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+You can test the Modal endpoint locally:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+modal serve modal/sharp_api.py
+```
 
-## Deploy on Vercel
+Then use the local URL printed in the terminal.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Deploying to Production
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+modal deploy modal/sharp_api.py
+```
+
+## Usage
+
+1. Open the app in your browser
+2. Drag and drop an image (or click to select)
+3. Wait for processing (first request may take 30-60s due to cold start)
+4. Explore the 3D scene:
+   - **Drag** to rotate
+   - **Scroll** to zoom/fly through
+   - **Reset** button to return to default view
+   - **Expand** for fullscreen mode
+   - **Download** to save the PLY file
+
+## Troubleshooting
+
+### "Modal endpoint not configured"
+Make sure you've set `MODAL_ENDPOINT_URL` in your `.env.local` file.
+
+### Cold start taking too long
+The first request after 5+ minutes of inactivity will trigger a cold start. You can:
+- Increase `scaledown_window` in `sharp_api.py`
+- Pre-warm the endpoint with a dummy request
+
+### 3D viewer not loading
+Check browser console for WebGL errors. The viewer requires WebGL 2.0 support.
